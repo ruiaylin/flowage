@@ -1,0 +1,353 @@
+{
+    "addr":"127.0.0.1:4000",
+    "user":"root",
+    "password":"123",
+    "StatusAddr":":10080",
+    "groups":[{
+                "name": "trade00",
+                "RWSplit":True,
+                "failover":"123",
+                "master": {
+                        "name": "node1",
+                        "role":"master",
+                        "addr":"127.0.0.1",
+                        "port":3306 ,
+                        "password":"123",
+                        "mincached":16,
+                        "maxcached":64,
+                        "maxConnNum":128,
+                        "unlimit":True
+                    }, 
+                "slave": {
+                        "name": "node2",
+                        "role":"slave",
+                        "addr":"127.0.0.1",
+                        "port":3307 ,
+                        "password":"123",
+                        "mincached":16,
+                        "maxcached":32,
+                        "maxConnNum":64,
+                        "unlimit":false
+                    },
+            },
+            {
+                "name": "trade01",
+                "RWSplit":True,
+                "failover":"123 ",
+                "master": {
+                        "name": "node3",
+                        "role":"master",
+                        "addr":"127.0.0.2",
+                        "port":3306 ,
+                        "password":"123",
+                        "mincached":16,
+                        "maxcached":64,
+                        "maxConnNum":128,
+                        "unlimit":True
+                    }, 
+                "slave": {
+                        "name": "node4",
+                        "role":"slave",
+                        "addr":"127.0.0.2",
+                        "port":3307 ,
+                        "password":"123",
+                        "mincached":16,
+                        "maxcached":32,
+                        "maxConnNum":64,
+                        "unlimit":false
+                    }
+            }
+        ],
+    "schema": [{
+            "db": "flowage00",
+            "node":  "trade00"
+            },{
+                "db": "flowage01",
+                "node":  "trade00"
+            },{
+                "db": "flowage02",
+                "node":  "trade00"
+            },{
+                "db": "flowage03",
+                "node":  "trade00"
+            },{
+                "db": "flowage04",
+                "node":  "trade00"
+            },{
+                "db": "flowage05",
+                "node":  "trade01"
+            },{
+                "db": "flowage06",
+                "node":  "trade01"
+            },{
+                "db": "flowage07",
+                "node":  "trade01"
+            },{
+                "db": "flowage08",
+                "node":  "trade01"
+            },{
+                "db": "flowage09",
+                "node":  "trade01"
+            }
+        ]
+    "tables":[{
+            "table"   : "trade",
+            "pkey"    : "tradeno",
+            "type"    : "char",
+            "method"  : "hash",
+            "partitions":
+               [
+                   { "suffix" : "_0", "db": "flowage00" },
+                   { "suffix" : "_1", "db": "flowage01" },
+                   { "suffix" : "_2", "db": "flowage02" },
+                   { "suffix" : "_3", "db": "flowage03" },
+                   { "suffix" : "_4", "db": "flowage04" },
+                   { "suffix" : "_5", "db": "flowage05" },
+                   { "suffix" : "_6", "db": "flowage06" },
+                   { "suffix" : "_7", "db": "flowage07" },
+                   { "suffix" : "_8", "db": "flowage08" },
+                   { "suffix" : "_9", "db": "flowage09" } 
+               ]
+            },{
+                "table"   : "trade_order",
+                "pkey"    : "tradeno",
+                "type"    : "char",
+                "method"  : "hash",
+                "partitions":
+                   [
+                       { "suffix" : "_0", "db": "flowage00" },
+                       { "suffix" : "_1", "db": "flowage01" },
+                       { "suffix" : "_2", "db": "flowage02" },
+                       { "suffix" : "_3", "db": "flowage03" },
+                       { "suffix" : "_4", "db": "flowage04" },
+                       { "suffix" : "_5", "db": "flowage05" },
+                       { "suffix" : "_6", "db": "flowage06" },
+                       { "suffix" : "_7", "db": "flowage07" },
+                       { "suffix" : "_8", "db": "flowage08" },
+                       { "suffix" : "_9", "db": "flowage09" } 
+                   ]
+            },{
+                "table"   : "order_ext",
+                "pkey"    : "tradeno",
+                "type"    : "char",
+                "method"  : "hash",
+                "partitions":
+                   [
+                       { "suffix" : "_0", "db": "flowage00" },
+                       { "suffix" : "_1", "db": "flowage01" },
+                       { "suffix" : "_2", "db": "flowage02" },
+                       { "suffix" : "_3", "db": "flowage03" },
+                       { "suffix" : "_4", "db": "flowage04" },
+                       { "suffix" : "_5", "db": "flowage05" },
+                       { "suffix" : "_6", "db": "flowage06" },
+                       { "suffix" : "_7", "db": "flowage07" },
+                       { "suffix" : "_8", "db": "flowage08" },
+                       { "suffix" : "_9", "db": "flowage09" } 
+                   ]
+            }
+        ]
+
+}
+
+group: 多个node 
+
+node : db connecttion
+       pool
+
+schema : 
+    db00 
+    db01
+    db02
+    db03
+
+table
+    sharding key config
+
+hash:
+    1. 一台机器 多个schema , 每个schema多张表  
+       schema       4
+       type         hash
+       partition    16 
+       tail         sequence
+       node1:db00:trade_table00
+       node1:db01:trade_table01
+       node1:db02:trade_table02
+       node1:db03:trade_table03
+
+        db算法:
+            for x in `seq 0 15`
+            do
+            echo $x , db_id = $(($x / 4))
+            done
+
+    2. 一台机器 多个schema , 每个schema多张表  
+       schema       4
+       method       hash
+       partition    4 
+       tail         none
+       node1:db00:trade_table
+       node1:db01:trade_table
+       node1:db02:trade_table
+       node1:db03:trade_table
+
+        db算法:
+            for x in `seq 0 15`
+            do
+                echo $x , db_id = $(($x / 4))
+            done
+
+range :
+    1. 一台机器 多个schema , 每个schema多张表  
+       schema       4
+       type         range
+       partition    4 
+       tail         sequence
+       node1:db00:trade_table00 100000 
+       node1:db01:trade_table01 200000
+       node1:db02:trade_table02 300000
+       node1:db03:trade_table03 400000
+
+    2. 一台机器 多个schema , 每个schema多张表  
+       schema       4
+       type         range
+       partition    16 
+       tail         none
+       node1:db00:trade_table 100000 
+       node1:db01:trade_table 200000
+       node1:db02:trade_table 300000
+       node1:db03:trade_table 400000
+        {"suffix":"_0", "group":"server1","value" : 100000 },
+        {"suffix":"_1", "group":"server1","value" : 200000 },
+        {"suffix":"_2", "group":"server1","value" : 300000 },
+        {"suffix":"_3", "group":"server1","value" : 400000 }
+        db算法:
+            for x in `seq 0 15`
+            do
+                echo $x , db_id = $(($x / 4))
+            done
+
+# server listen addr
+addr : 0.0.0.0:9696
+# server user and password
+user :  kingshard
+password : kingshard
+
+# if set log_path, the sql log will write into log_path/sql.log,the system log
+# will write into log_path/sys.log
+#log_path : /Users/flike/log
+
+# log level[debug|info|warn|error],default error
+log_level : debug
+
+# if set log_sql(on|off) off,the sql log will not output
+log_sql: on
+ 
+# only log the query that take more than slow_log_time ms
+#slow_log_time : 100
+
+# the path of blacklist sql file
+# all these sqls in the file will been forbidden by kingshard
+#blacklist_sql_file: /Users/flike/blacklist
+
+# only allow this ip list ip to connect kingshard
+#allow_ips: 127.0.0.1
+
+# the charset of kingshard, if you don't set this item
+# the default charset of kingshard is utf8.
+#proxy_charset: gbk
+
+# node is an agenda for real remote mysql server.
+groups :
+- 
+    name : tradedb00
+    # default max conns for mysql server
+    max_conns: 32
+    # all mysql in a node must have the same user and password
+    user :  kingshard 
+    password : kingshard
+    # master represents a real mysql master server 
+    master : 127.0.0.1:3306
+    # slave represents a real mysql salve server
+    # And the number after '@' is read load weight of this slave.
+    slave  : 192.168.1.1:3306
+    # failover for the high avaliablity of write business
+    failover : 192.168.2.1:3306
+    down_after_noalive : 32
+- 
+    name : tradedb01
+    # default max conns for mysql server
+    max_conns: 32
+    # all mysql in a node must have the same user and password
+    user :  kingshard 
+    password : kingshard
+    # master represents a real mysql master server 
+    master : 127.0.0.2:3306
+    # slave represents a real mysql salve server
+    # And the number after '@' is read load weight of this slave.
+    slave  : 192.168.1.2:3306
+    # failover for the high avaliablity of write business
+    failover : 192.168.2.2:3306
+    down_after_noalive : 32
+-
+    name : tradedb02
+    # default max conns for mysql server
+    max_conns: 32
+    # all mysql in a node must have the same user and password
+    user :  kingshard 
+    password : kingshard
+    # master represents a real mysql master server 
+    master : 127.0.0.3:3306
+    # slave represents a real mysql salve server
+    # And the number after '@' is read load weight of this slave.
+    slave  : 192.168.1.3:3306
+    # failover for the high avaliablity of write business
+    failover : 192.168.2.3:3306
+    down_after_noalive : 32
+
+-
+    name : tradedb03
+    # default max conns for mysql server
+    max_conns: 32
+    # all mysql in a node must have the same user and password
+    user :  kingshard 
+    password : kingshard
+    # master represents a real mysql master server 
+    master : 127.0.0.4:3306
+    # slave represents a real mysql salve server
+    # And the number after '@' is read load weight of this slave.
+    slave  : 192.168.1.4:3306
+    # failover for the high avaliablity of write business
+    failover : 192.168.2.4:3306
+    down_after_noalive : 32
+
+
+# schema defines sharding rules, the db is the sharding table database.
+
+shard :
+    -   
+        table : test_shard_hash
+        pkey : id
+        method : hash
+        partitions : 16
+        groups : ['tradedb00','tradedb01','tradedb02','tradedb03']
+    -   
+        table : test_shard_hash
+        pkey : id
+        method : hash
+        partitions : 16
+        groups : ['tradedb00','tradedb01','tradedb02','tradedb03']
+    -
+        table : user_trade
+        pkey : user_id
+        type : int
+        method : hash
+        partitions : 16
+        groups : ['tradedb00','tradedb01','tradedb02','tradedb03']
+        subpkey : create_time
+        subtype : timestamp
+        submethod : range
+        subpartitions : [   { "suffix" : "_16Q1", "value" : "2016/04/01" },
+                            { "suffix" : "_16Q2", "value" : "2016/07/01" }, 
+                            { "suffix" : "_16Q3", "value" : "2016/10/01" },
+                            { "suffix" : "_16Q4", "value" : "2017/01/01" }]
+
