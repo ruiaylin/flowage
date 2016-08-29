@@ -1,11 +1,9 @@
-# flowage	
+# Flowage	
 
 Flowage is a MySQL proxy powered by Go !
 
-It  aims to supply a simple solution for MySQL sharding
+It aims to supply a full solution for MySQL sharding & HA
 
+# Info
 
-
-# 
-
-flowage based on mixer which developed by siddontang
+Flowage based on mixer which developed by siddontang
